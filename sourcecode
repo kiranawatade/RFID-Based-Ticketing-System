@@ -1,0 +1,208 @@
+//include the RFID libs
+#include <SPI.h>
+#include <MFRC522.h>
+ 
+//include the LCD lib
+#include <LiquidCrystal.h>
+ 
+ //declear the reset and SDA pins of RFID
+#define SS_PIN 10
+#define RST_PIN 9
+ 
+// Create MFRC522 instance.
+MFRC522 mfrc522(SS_PIN, RST_PIN);   // Create MFRC522 instance.
+//declear what LCD pins u are sending data
+LiquidCrystal lcd(3, 2, 6, 4, 7, 5);
+ 
+ 
+ 
+String pass1 = "CHIBUEZE";
+String acct1 = "6A 2D 67 07";
+String pass2 = "SMART";
+String acct2 = "77 1F 73 63";
+int balance1 = 1000;
+int balance2 = 1000;
+int rate = 200;
+ 
+ 
+void setup() 
+{
+  Serial.begin(9600);
+  // Initiate  SPI bus  
+  SPI.begin();
+  // Initiate MFRC522      
+  mfrc522.PCD_Init();
+  //begin the LCD
+  lcd.begin(16, 4);
+  //state your actuator pins 
+  pinMode(A0, OUTPUT);
+  pinMode(A1, OUTPUT);
+  pinMode(A2, OUTPUT);
+   
+//display a welcome note
+  lcd.setCursor(0, 0);
+  lcd.print("WELCOME CHIBUEZE ");
+  delay(4000);
+  lcd.setCursor(0, 0);
+  lcd.print("   BUS TICKET       ");
+    lcd.setCursor(0, 1);
+  lcd.print(" PAYMENT SYSTEM  ");
+  delay(2000);
+    lcd.clear();
+ 
+    //mfrc522.PCD_Init(); // Init MFRC522 
+    lcd.setCursor(0, 2);
+  lcd.print("                                  ");
+  lcd.setCursor(0, 3);
+  lcd.print("                                  ");
+   
+}
+ 
+void unregisted(){
+   tone(A0, 1000);
+delay(500);
+noTone(A0);
+delay(500);
+ 
+tone(A0, 1000);
+delay(500);
+noTone(A0);
+delay(500);
+ 
+tone(A0, 1000);
+delay(500);
+noTone(A0);
+delay(500);
+   
+  lcd.setCursor(0, 0);
+              lcd.print(" UNREGISTERED              "); 
+              delay(2000);
+              lcd.setCursor(0, 1);
+              lcd.print("PLS GET A VALID CARD");
+                             
+                  for (int positionCounter = 0; positionCounter < 43; positionCounter++) {
+    // scroll one position left:
+    lcd.scrollDisplayLeft();
+         // wait a bit:
+    delay(150);
+  }
+  
+  //lcd.clear();
+}
+ 
+void loop() { 
+  //turn off the actuators
+  digitalWrite(A0, LOW);
+  analogWrite(A1, 0);
+  analogWrite(A2, 0);
+   
+    lcd.setCursor(0, 0);
+  lcd.print("Bus Fare is #");
+  lcd.println(rate);
+  lcd.println("     ");
+  lcd.setCursor(0, 1);
+  lcd.print("  Swipe To Pay     ");
+   
+   
+    // Look for new cards  
+  if ( ! mfrc522.PICC_IsNewCardPresent()) 
+  {
+    return;
+  }
+  // Select one of the cards
+  if ( ! mfrc522.PICC_ReadCardSerial()) 
+  {
+    return;
+  }
+  //Show UID on serial monitor
+  Serial.print("UID tag :");
+  String content= "";
+  byte letter;
+  for (byte i = 0; i < mfrc522.uid.size; i++) 
+  {
+     
+     Serial.print(mfrc522.uid.uidByte[i] < 0x10 ? " 0" : " ");
+     Serial.print(mfrc522.uid.uidByte[i], HEX);
+     content.concat(String(mfrc522.uid.uidByte[i] < 0x10 ? " 0" : " "));
+     content.concat(String(mfrc522.uid.uidByte[i], HEX));
+  }
+  Serial.println();
+  Serial.print("Message : ");
+  content.toUpperCase();
+  //this is where u put the UID of the card that you want to give access
+     if (content.substring(1) == "6A 2D 67 07") {
+      analogWrite(A2, 255);
+        delay(250);
+        analogWrite(A2, 0);
+         delay(250);
+        analogWrite(A2, 255); 
+          if (balance1 >= rate){
+              balance1 -= rate;
+ 
+              
+         
+              lcd.setCursor(0, 0);
+              lcd.print("   Hi CHIBUEZE   ");
+              lcd.setCursor(0, 1);
+              lcd.print("___Payment O.K___      ");
+               
+             }
+             else{
+              lcd.setCursor(0, 0);
+              lcd.print(" Sorry CHIBUEZE   ");
+              lcd.setCursor(0, 1);
+              lcd.print("Insuficient Fund");
+              
+               }
+              delay(4000);
+              lcd.setCursor(0, 1);
+              lcd.print("_Balance is #"); 
+              lcd.println(balance1);
+              lcd.println(".      .");
+              delay(4000);
+             return;
+            }
+ 
+             
+     if (content.substring(1) == "77 1F 73 63") {
+      analogWrite(A2, 255);
+        delay(250);
+        analogWrite(A2, 0);
+         delay(250);
+        analogWrite(A2, 255); 
+         
+          if (balance2 >= rate){
+              balance2 -= rate;
+              lcd.setCursor(0, 0);
+              lcd.print("     Hi SMART     ");
+              lcd.setCursor(0, 1);
+              lcd.print("___Payment O.K___      ");
+               }
+              else{
+              lcd.setCursor(0, 0);
+              lcd.print("   Sorry SMART   ");
+              lcd.setCursor(0, 1);
+              lcd.print("Insuficient Fund");
+               }
+              delay(4000);
+              lcd.setCursor(0, 1);
+              lcd.print("_Balance is #"); 
+              lcd.println(balance2);
+              lcd.println(".      .");
+              delay(4000);
+             return;
+            }
+       else{
+        lcd.clear();
+        analogWrite(A1, 255);
+        delay(250);
+        analogWrite(A1, 0);
+         delay(250);
+        analogWrite(A1, 255); 
+       unregisted();
+         
+         
+          
+       }
+       lcd.clear();
+             }
