@@ -1,5 +1,4 @@
-# RFID
-RFID Based Smart Ticketing System For Bus Train Metro 
+#RFID Based Smart Ticketing System For Bus Train Metro 
 
 The Public transport system is a major source of income in developing countries like India. So Government Earns lot of revenue from the ticketing 
 But, this public transport system faces several problems. The conductor will face various problems in issuing the tickets. 
